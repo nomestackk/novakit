@@ -3,6 +3,28 @@ local NovaKIT = {}
 
 local path = (...):gsub('init', '')
 
+-- Utility
+
+NovaKIT.rgb = function(red, green, blue, alpha)
+  return { red / 255, green / 255, blue / 255, (alpha or 255) / 255 }
+end
+
+NovaKIT.override = function(base, override)
+  for k in pairs(base) do
+    if override[k] then
+      base[k] = override[k]
+    end
+  end
+  return base
+end
+
+-- Builtin
+
+NovaKIT.Builtin = require(path .. '.Builtin') ---@type NovaKIT.Builtin
+
+-- Components
+
+NovaKIT.Font = require(path .. '.Font') ---@type NovaKIT.Font
 NovaKIT.Button = require(path .. '.Button') ---@type fun(settings: NovaKIT.ButtonSettings|string): NovaKIT.Button
 NovaKIT.Text = require(path .. '.Text') ---@type fun(settings: NovaKIT.TextSettings|string): NovaKIT.Text
 NovaKIT.Container = require(path .. '.Container') ---@type fun(settings: NovaKIT.ContainerSettings): NovaKIT.Container

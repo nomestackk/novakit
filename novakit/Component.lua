@@ -21,8 +21,16 @@ local function getPointInsideOf(x, y, width, height, pointX, pointY)
     return pointX > x and pointX < x + width and pointY > y and pointY < y + height
 end
 
+local lastCursor = love.mouse.getSystemCursor 'arrow'
+local setCursor = love.mouse.setCursor
+
+local function cursor(newCursor)
+    setCursor(newCursor)
+end
+
 ---@class NovaKIT.ComponentSettings
 ---@field name? string
+---@field cursor? love.CursorType
 ---@field x? number
 ---@field y? number
 ---@field width? number
@@ -70,6 +78,7 @@ return function(settings, name)
     ---@field parent NovaKIT.Container?
     local Component = {}
 
+    Component.cursor = settings.cursor and love.mouse.getSystemCursor(settings.cursor)
     Component.antiAlign = settings.antiAlign
     Component.debug = false
     Component.name = name or settings.name or 'BaseComponent'
@@ -155,7 +164,7 @@ return function(settings, name)
             self:capture()
         end
         if self.display then
-            self:execute('draw')
+            self:execute 'draw'
         end
     end
 
@@ -183,6 +192,9 @@ return function(settings, name)
             end
         end
     end
+
+    Component:addEventListener('onEnter', function(self) if (self.cursor) then cursor(self.cursor) end end)
+    Component:addEventListener('onLeave', function(self) if (self.cursor) then cursor(lastCursor) end end)
 
     return setmetatable(Component, {
         __tostring = function(self)

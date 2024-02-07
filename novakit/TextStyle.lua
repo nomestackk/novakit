@@ -23,7 +23,7 @@ return function(settings)
     local TextStyle = {}
 
     TextStyle.font = settings.font or getFont()
-    TextStyle.color = settings.color or { 0, 0, 0, 1 }
+    TextStyle.color = settings.color or { 1, 1, 1, 1 }
     TextStyle.decoration = settings.decoration or 'none'
     TextStyle.halign = settings.halign or 'center'
     TextStyle.valign = settings.valign or 'middle'

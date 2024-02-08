@@ -1,4 +1,4 @@
----@alias Nova.ColorFormat { [1]: integer, [2]: integer, [3]: integer, [4]: integer }
+---@alias NovaKIT.ColorFormat { [1]: integer, [2]: integer, [3]: integer, [4]: integer }
 
 ---@class NovaKIT.ContainerSettings: NovaKIT.ComponentSettings
 ---@field gap? integer Determines how many gap this component will have.

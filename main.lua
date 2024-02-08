@@ -1,20 +1,71 @@
 local novakit = require 'novakit'
+local rgb = novakit.rgb
 
 local root = novakit.Container()
 
-local topbar = root:addImmutable(novakit.HDiv { alignmentMethod = 'position', height = 50 }) ---@cast topbar NovaKIT.HDiv
-local statusText = topbar:addImmutable(novakit.Text { text = 'Completed: 0/0', width = topbar.width - 100, height = topbar.height })
-local clear = topbar:addImmutable(novakit.Button { text = 'Clear', width = 100, height = 50 })
-clear:right()
+local font = love.graphics.newFont('fonts/inter/Regular.ttf', 14)
+font:setFilter("nearest", "nearest")
 
-local tasks = root:addImmutable(novakit.VDiv { alignmentMethod = 'position', y = topbar.height, height = root.height - topbar.height })
+local white = novakit.TextStyle {
+  font = font,
+  color = { 1, 1, 1, 1 }
+}
 
-local floatingAddButton = root:addImmutable(novakit.Button { antiAlign = true, text = '+', width = 64, height = 64 })
-floatingAddButton:bottom(32)
-floatingAddButton:right(32)
-floatingAddButton:addEventListener('onClick', function(self, ...)
-  tasks = tasks + novakit.Text { text = 'New Task', height = 50 }
-end)
+local black = novakit.TextStyle {
+  font = font,
+  color = { 0, 0, 0, 1 }
+}
+
+local modal = root:addImmutable(novakit.Panel {
+  root = novakit.VDiv {
+    width = 400,
+    height = 300,
+  },
+  stylebox = novakit.Stylebox {
+    shrink = -16,
+    color = { 1, 1, 1, 1 },
+    radius = 16
+  }
+}) ---@cast modal NovaKIT.VDiv
+
+local text = modal:addImmutable(novakit.Text {
+  text = 'Modal Text',
+  height = 200,
+  textStyle = black
+}) ---@cast text NovaKIT.Text
+local hdiv = modal:addImmutable(novakit.HDiv { height = 100 }) ---@cast hdiv NovaKIT.HDiv
+local ok = modal:addImmutable(novakit.Button {
+  text = 'Ok',
+  width = 100,
+  stylebox = novakit.Stylebox {
+    color = rgb(3, 218, 198),
+  },
+  hovered = {
+    stylebox = novakit.Stylebox {
+      color = rgb(1, 135, 134),
+      radius = 8
+    }
+  },
+  textstyle = white
+}) ---@cast ok NovaKIT.Button
+local cancel = modal:addImmutable(novakit.Button {
+  text = 'Cancel',
+  width = 100,
+  stylebox = novakit.Stylebox {
+    color = rgb(176, 0, 32)
+  },
+  hovered = {
+    stylebox = novakit.Stylebox {
+      color = rgb(157, 0, 24),
+      radius = 8
+    }
+  },
+  textstyle = white
+}) ---@cast cancel NovaKIT.Button
+
+modal:center()
+modal:middle()
+modal:align()
 
 function love.draw()
   root:draw()

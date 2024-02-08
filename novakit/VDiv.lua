@@ -11,25 +11,23 @@ return function(settings)
 
     function VDiv:alignPosition()
         local y = self.y
-        for i = 1, #self.children do
-            local child = self.children[i]
-            if not child.antiAlign then
+        self:forEach(function(child)
+            if child:isAlignable() then
                 child.x = self.x
                 child.y = y
                 y = y + child.height + self.gap
             end
-        end
+        end)
     end
 
     function VDiv:alignSize()
-        local height = self.height / #self.children
-        for i = 1, #self.children do
-            local child = self.children[i]
-            if not child.antiAlign then
+        local height = self.height / self:alignableChildrenCount()
+        self:forEach(function(child)
+            if child:isAlignable() then
                 child.height = height
                 child.width = self.width
             end
-        end
+        end)
     end
 
     return VDiv

@@ -1,12 +1,14 @@
-local path = (...):gsub('Component', '')
-local Stylebox = require(path .. '.Stylebox') ---@type fun(...): NovaKIT.Stylebox
-local TextStyle = require(path .. '.TextStyle') ---@type fun(...): NovaKIT.TextStyle
+local Stylebox = require(NovaPath .. '.Stylebox') ---@type fun(...): NovaKIT.Stylebox
+local TextStyle = require(NovaPath .. '.TextStyle') ---@type fun(...): NovaKIT.TextStyle
+local Utility = require(NovaPath .. '.Utility') ---@type NovaKIT.Utility
 
 local getWidth = love.graphics.getWidth
 local getHeight = love.graphics.getHeight
 local getOS = love.system.getOS
 local isDown = love.mouse.isDown
 local getPosition = love.mouse.getPosition
+local setCursor = love.mouse.setCursor
+local getSystemCursor = love.mouse.getSystemCursor
 local s = tostring
 
 local IS_IN_MOBILE_DEVICE = getOS() == 'Android' or getOS() == 'iOS'
@@ -21,12 +23,7 @@ local function getPointInsideOf(x, y, width, height, pointX, pointY)
     return pointX > x and pointX < x + width and pointY > y and pointY < y + height
 end
 
-local lastCursor = love.mouse.getSystemCursor 'arrow'
-local setCursor = love.mouse.setCursor
-
-local function cursor(newCursor)
-    setCursor(newCursor)
-end
+local lastCursor = getSystemCursor 'arrow'
 
 ---@class NovaKIT.ComponentSettings
 ---@field name? string
@@ -52,6 +49,7 @@ end
 ---| string
 
 local EMPTY = {}
+
 local DebugTransparentColor = { 0.05, 1, 0.2, 0.5 }
 local DebugSolidColor = { 0.05, 1, 0.2, 1 }
 local DebugTextStyle = TextStyle {
@@ -65,10 +63,15 @@ local DebugStylebox = Stylebox {
     borderColor = DebugSolidColor
 }
 
+---Base class for all UI elements.
 ---@param settings? NovaKIT.ComponentSettings
 ---@param name? string
 return function(settings, name)
     settings = settings or EMPTY
+    if not Utility.ExpectType(settings, 'table', 'settings') then return end
+
+    name = name or settings.name or 'BaseComponent'
+    if not Utility.ExpectType(name, 'string', 'name') then return end
 
     if settings.enabled == nil then settings.enabled = true end
     if settings.display == nil then settings.display = true end
@@ -78,10 +81,10 @@ return function(settings, name)
     ---@field parent NovaKIT.Container?
     local Component = {}
 
-    Component.cursor = settings.cursor and love.mouse.getSystemCursor(settings.cursor)
+    Component.cursor = settings.cursor and getSystemCursor(settings.cursor)
     Component.antiAlign = settings.antiAlign
     Component.debug = false
-    Component.name = name or settings.name or 'BaseComponent'
+    Component.name = name
     Component.parent = settings.parent
     Component.x = settings.x or 0
     Component.y = settings.y or 0
@@ -95,13 +98,26 @@ return function(settings, name)
     Component.enabled = settings.enabled
     Component.display = settings.display
 
+    ---@param display boolean
+    function Component:setDisplay(display)
+        self.display = display
+        local parent = self.parent
+        if parent then
+            parent:align()
+        else
+            Utility.Hint(
+                'Unnecessary call to the setDisplay() function of \'Component\'.\nConsider transforming this function to \'component.display = true|false\' for better performance.'
+            )
+        end
+    end
+
+    function Component:isAlignable()
+        return self.display and not self.antiAlign
+    end
+
     function Component:drawDebugInformation()
-        if not self.debug then
-            return
-        end
-        if not self.hovered then
-            return
-        end
+        if not self.debug then return end
+        if not self.hovered then return end
         local info = '<' ..
             self.name ..
             ' /> (' .. s(self.x) .. ', ' .. s(self.y) .. ', ' .. s(self.width) .. ', ' .. s(self.height) .. ')'
@@ -144,18 +160,45 @@ return function(settings, name)
         end
     end
 
+    function Component:center(offset)
+        offset = offset or 0
+        local parent = self.parent
+        if parent then self.x = (parent.x + parent.width / 2) - (self.width / 2) + offset end
+    end
+
+    function Component:middle(offset)
+        offset = offset or 0
+        local parent = self.parent
+        if parent then self.y = (parent.y + parent.height / 2) - (self.height / 2) + offset end
+    end
+
+    function Component:top(margin)
+        margin = margin or 0
+        local parent = self.parent
+        if parent then self.y = parent.y + margin end
+    end
+
+    function Component:bottom(margin)
+        margin = margin or 0
+        local parent = self.parent
+        if parent then self.y = (parent.y + parent.height) - (self.height + margin) end
+    end
+
+    function Component:left(margin)
+        margin = margin or 0
+        local parent = self.parent
+        if parent then self.x = parent.x + margin end
+    end
+
+    function Component:right(margin)
+        margin = margin or 0
+        local parent = self.parent
+        if parent then self.x = (parent.x + parent.width) - (self.width + margin) end
+    end
+
     ---@param other NovaKIT.Component
     function Component:moveBelow(other)
         self.y = other.y + other.height
-    end
-
-    function Component:setAvailableHeight()
-        local total = 0
-        for i = 1, #self.parent.children do
-            local c = self.parent.children[i]
-            total = total + c.height
-        end
-        self.height = total
     end
 
     ---Executes the `draw` event queue if `Component.display` is equal to `true`.
@@ -174,10 +217,10 @@ return function(settings, name)
     ---@param eventName NovaKIT.ComponentEventName
     ---@param callback fun(self, ...: any): any
     function Component:addEventListener(eventName, callback)
-        if not self.events[eventName] then
-            self.events[eventName] = {}
-        end
-        self.events[eventName][#self.events[eventName] + 1] = callback
+        local events = self.events
+        if not events[eventName] then events[eventName] = {} end
+        local queue = events[eventName]
+        queue[#queue + 1] = callback
     end
 
     ---Executes every callback in the `eventName` event queue of this Component.
@@ -186,15 +229,16 @@ return function(settings, name)
     ---@param ... any Arguments to give for each callback.
     function Component:execute(eventName, ...)
         if self.events[eventName] then
-            for index = 1, #self.events[eventName] do
-                local event = self.events[eventName][index]
+            local queue = self.events[eventName]
+            for index = 1, #queue do
+                local event = queue[index]
                 event(self, ...)
             end
         end
     end
 
-    Component:addEventListener('onEnter', function(self) if (self.cursor) then cursor(self.cursor) end end)
-    Component:addEventListener('onLeave', function(self) if (self.cursor) then cursor(lastCursor) end end)
+    Component:addEventListener('onEnter', function(self) if (self.cursor) then setCursor(self.cursor) end end)
+    Component:addEventListener('onLeave', function(self) if (self.cursor) then setCursor(lastCursor) end end)
 
     return setmetatable(Component, {
         __tostring = function(self)

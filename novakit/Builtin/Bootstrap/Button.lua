@@ -1,11 +1,12 @@
 local path = (...):gsub('Builtin.Bootstrap.Button', '')
+
 local novakit = require(path .. '.init') ---@type NovaKIT
 local override = novakit.override
 local rgb = novakit.rgb
 
 local inter = {
   color = rgb(248, 249, 250),
-  font = novakit.Font.Inter.Regular(14)
+  font = love.graphics.newFont("novakit/Fonts/Inter/Regular.ttf", 14)
 }
 
 ---Creates a base button for every boostrap themed buttons

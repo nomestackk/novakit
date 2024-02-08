@@ -1,7 +1,12 @@
 local path      = (...):gsub('Button', '')
+
 local Component = require(path .. '.Component') ---@type fun(...): NovaKIT.Component
 local Stylebox  = require(path .. '.Stylebox') ---@type fun(...): NovaKIT.Stylebox
 local TextStyle = require(path .. '.TextStyle') ---@type fun(...): NovaKIT.TextStyle
+
+local EMPTY     = {}
+local type      = type
+local hand      = love.mouse.getSystemCursor 'hand'
 
 ---@class NovaKIT.ButtonStyle
 ---@field stylebox NovaKIT.Stylebox
@@ -13,11 +18,7 @@ local TextStyle = require(path .. '.TextStyle') ---@type fun(...): NovaKIT.TextS
 ---@field textstyle? NovaKIT.TextStyle Represents the TextStyle that will be rendered on top of the background.
 ---@field style? table<'default'|'hovered'|'clicked', NovaKIT.ButtonStyle>
 
-local EMPTY     = {}
-
 ---Creates a new Button.
----A button is just a combination of a Stylebox and a TextStyle.
----Every other event is inherited from Component.
 ---@param settings? NovaKIT.ButtonSettings|string A table containing the settings of the Button. This argument can be nil.
 return function(settings)
     settings = settings or EMPTY
@@ -36,7 +37,7 @@ return function(settings)
     settings.style.hovered = settings.style.hovered or { stylebox = settings.stylebox, textstyle = settings.textstyle }
     settings.style.clicked = settings.style.clicked or { stylebox = settings.stylebox, textstyle = settings.textstyle }
 
-    Button.cursor = love.mouse.getSystemCursor 'hand'
+    Button.cursor = hand
     Button.text = settings.text or 'Undefined'
     Button.stylebox = settings.stylebox
     Button.textstyle = settings.textstyle

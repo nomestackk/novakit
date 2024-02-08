@@ -11,25 +11,23 @@ return function(settings)
 
     function HDiv:alignPosition()
         local x = self.x
-        for i = 1, #self.children do
-            local child = self.children[i]
-            if not child.antiAlign then
+        self:forEach(function(child)
+            if child:isAlignable() then
                 child.x = x
                 child.y = self.y
                 x = x + child.width + self.gap
             end
-        end
+        end)
     end
 
     function HDiv:alignSize()
-        local width = self.width / #self.children
-        for i = 1, #self.children do
-            local child = self.children[i]
-            if not child.antiAlign then
+        local width = self.width / self:alignableChildrenCount()
+        self:forEach(function(child)
+            if child:isAlignable() then
                 child.width = width
                 child.height = self.height
             end
-        end
+        end)
     end
 
     return HDiv

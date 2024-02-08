@@ -1,22 +1,33 @@
-local path      = (...):gsub('Container', '')
-local Component = require(path .. '.Component') ---@type fun(...): NovaKIT.Component
-local Text      = require(path .. '.Text') ---@type fun(...): NovaKIT.Text
+local path           = (...):gsub('Container', '')
+local Component      = require(path .. '.Component') ---@type fun(...): NovaKIT.Component
+local Text           = require(path .. '.Text') ---@type fun(...): NovaKIT.Text
 
-local function clear(t)
-    for i = 1, #t do
-        t[i] = nil
+local setmetatable   = setmetatable
+
+local tabs           = ''
+local EMPTY          = {}
+
+local metatable      = {}
+
+metatable.__tostring = function(self)
+    local s = '<' .. self.name .. ' />:\n'
+    tabs = tabs .. '\t'
+    for i = 1, #self.children do
+        local child = self.children[i]
+        s = s .. tabs .. tostring(child) .. '\n'
     end
+    tabs = string.sub(tabs, 1, #tabs - 2)
+    return s
 end
 
----@class NovaKIT.ContainerSettings: NovaKIT.ComponentSettings
----@field gap? integer Determines how many gap this component will have.
----@field alignmentMethod? 'position+size'|'position'|'size' Determines how this component will align its children.
----@field children? NovaKIT.Component[] Determines the list of children of this component.
----@field alignOnMutation? boolean Determines whether this container should be align when `x`, `y`, `width` and `height` properties are changed.
+metatable.__len      = function(self)
+    return #self.children
+end
 
-local tabs  = ''
-
-local EMPTY = {}
+metatable.__add      = function(self, object)
+    self:add(object)
+    return self
+end
 
 ---Creates a new Container.
 ---By default containers automatically aligns its children when its position is mutated.
@@ -25,15 +36,15 @@ local EMPTY = {}
 ---You can use `tostring` in containers.
 ---You can use the '#' operator to get the length of the children list of this container. Example: `print(#myContainer)`.
 ---@param settings? NovaKIT.ContainerSettings A table containing the settings of the Container. This argument can be nil.
+---@param name? string
 return function(settings, name)
     settings = settings or EMPTY
-
-    if settings.alignOnMutation == nil then settings.alignOnMutation = true end
 
     ---@class NovaKIT.Container: NovaKIT.Component
     local Container = Component(settings, name or 'Container')
 
-    Container.alignOnMutation = settings.alignOnMutation
+    setmetatable(Container, metatable)
+
     Container.alignmentMethod = settings.alignmentMethod or 'position+size'
     Container.gap = settings.gap or 0
     Container.children = settings.children or {} ---@type NovaKIT.Component[]|NovaKIT.Container[]
@@ -50,33 +61,57 @@ return function(settings, name)
     function Container:alignSize()
     end
 
-    ---Calculates the given dimension name.
-    ---This function works like this:
-    ---```lua
-    ---local dimensionValue = 0
-    ---for index = 1, #self.children do
-    ---local child = self.children[i]
-    ---dimensionValue = dimensionValue + child[dimensionName] + self.gap
-    ---return value
-    ---end
-    ---```
-    ---@param dimensionName 'width'|'height' Determines what dimension should be used in the calculation.
-    ---@return integer dimensionValue
-    function Container:getDimensionBasedOnChildren(dimensionName)
-        local value = 0
-        for i = 1, #self.children do
-            local child = self.children[i]
-            value = value + child[dimensionName] + self.gap
-        end
-        return value
+    function Container:alignableChildrenCount()
+        return #self:filter(function(child) return child:isAlignable() end)
     end
 
-    ---Executes the function `callback` in every child of this container.
     ---@param callback fun(child)
     function Container:forEach(callback)
-        for i = 1, #self.children do
-            callback(self.children[i])
+        local children = self.children
+        for index = 1, #children do
+            local child = children[index]
+            callback(child)
         end
+    end
+
+    ---@param callback fun(child): boolean
+    ---@nodiscard
+    function Container:some(callback)
+        local children = self.children
+        for index = 1, #children do
+            local child = children[index]
+            if callback(child) == true then
+                return true
+            end
+        end
+        return false
+    end
+
+    ---@param callback fun(child): boolean
+    ---@nodiscard
+    function Container:every(callback)
+        local children = self.children
+        for index = 1, #children do
+            local child = children[index]
+            if callback(child) == false then
+                return false
+            end
+        end
+        return true
+    end
+
+    ---@param callback fun(child): boolean
+    ---@nodiscard
+    function Container:filter(callback)
+        local children = self.children
+        local result = {}
+        for index = 1, #children do
+            local child = children[index]
+            if callback(child) == true then
+                result[#result + 1] = child
+            end
+        end
+        return result
     end
 
     ---Calls `Container:alignPosition()` and `Container:alignSize()` on this container
@@ -103,7 +138,7 @@ return function(settings, name)
     ---Adds `component` to the list of children of this Component and calls `Container:align()` after.
     ---@generic T: NovaKIT.Component|string
     ---@param component T
-    ---@return NovaKIT.Component
+    ---@return NovaKIT.Component|NovaKIT.Container
     function Container:add(component)
         if (type(component) ~= 'table') then
             component = Text(tostring(component))
@@ -117,7 +152,7 @@ return function(settings, name)
     ---Adds `component` to the list of children of this Component but doesn't call `Container:align()`.
     ---@generic T: NovaKIT.Component|string
     ---@param component T
-    ---@return NovaKIT.Component
+    ---@return NovaKIT.Component|NovaKIT.Container
     function Container:addImmutable(component)
         if (type(component) ~= 'table') then
             component = Text(tostring(component))
@@ -142,7 +177,10 @@ return function(settings, name)
     end
 
     function Container:clear()
-        clear(self.children)
+        local children = self.children
+        for index = 1, #children do
+            children[index] = nil
+        end
     end
 
     ---Executes `functionName` for every child of this Component.
@@ -173,36 +211,6 @@ return function(settings, name)
             self:call('draw')
         end
         self:drawDebugInformation()
-    end
-
-    -- TODO: Make this more efficient
-
-    local mt = getmetatable(Container)
-    mt.__tostring = function(self)
-        local s = '<' .. self.name .. ' />:\n'
-        tabs = tabs .. '\t'
-        for i = 1, #self.children do
-            local child = self.children[i]
-            s = s .. tabs .. tostring(child) .. '\n'
-        end
-        tabs = string.sub(tabs, 1, #tabs - 2)
-        return s
-    end
-
-    mt.__len = function(self)
-        return #self.children
-    end
-
-    mt.__add = function(self, value)
-        self:add(value)
-        return self
-    end
-
-    mt.__newindex = function(self, key, value)
-        rawset(self, key, value)
-        if key == 'x' or key == 'y' or key == 'width' or key == 'height' then
-            self:align()
-        end
     end
 
     return Container

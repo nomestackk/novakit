@@ -1,9 +1,11 @@
 local path = (...):gsub('Center', '')
+
 local Container = require(path .. '.Container') ---@type fun(...): NovaKIT.Container
+
 local EMPTY = {}
 
----This container automatically aligns its children at the center of its box.
----The `alignmentMethod` is always set to 'position' when its created.
+---CenterContainer is a container that automatically keeps all of its child components centered within it at their minimum size.
+---It ensures that the child controls are always aligned to the center, making it easier to create centered layouts without manual positioning.
 ---@param settings? NovaKIT.ContainerSettings
 ---@return NovaKIT.Center center
 return function(settings)

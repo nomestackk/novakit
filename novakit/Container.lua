@@ -49,6 +49,48 @@ return function(settings, name)
     Container.gap = settings.gap or 0
     Container.children = settings.children or {} ---@type NovaKIT.Component[]|NovaKIT.Container[]
 
+    ---@param object NovaKIT.Component
+    function Container:index(object)
+        local children = self.children
+        for index = 1, #children do
+            local child = children[index]
+            if child == object then
+                return index
+            end
+        end
+    end
+
+    ---@param target NovaKIT.Component
+    ---@param to NovaKIT.Component
+    ---@return boolean
+    function Container:replace(target, to)
+        local targetIndex = self:index(target)
+        if not self.children[targetIndex] then
+            print('Component not found')
+            return false
+        end
+        self:add(to, targetIndex)
+        return true
+    end
+
+    function Container:deepReplace(target, to)
+        local replacedInSelf = self:replace(target, to)
+        if replacedInSelf then return end
+        local children = self.children
+        for index = 1, #children do
+            local child = children[index]
+            if child.deepReplace then
+                ---@cast child NovaKIT.Container
+                local success = child:replace(target, to)
+                if success then
+                    print('Replaced successfully')
+                    return true
+                end
+            end
+        end
+        return false
+    end
+
     ---This function is designed to mutate the position of every child of this Container.
     ---This function will only be called if `Component.alignmentMethod` is equal to 'position+size' or 'position'.
     ---@protected
@@ -139,11 +181,11 @@ return function(settings, name)
     ---@generic T: NovaKIT.Component|string
     ---@param component T
     ---@return NovaKIT.Component|NovaKIT.Container
-    function Container:add(component)
+    function Container:add(component, customIndex)
         if (type(component) ~= 'table') then
             component = Text(tostring(component))
         end
-        self.children[#self.children + 1] = component ---@diagnostic disable-line
+        self.children[customIndex or #self.children + 1] = component ---@diagnostic disable-line
         component.parent = self ---@diagnostic disable-line
         self:align()
         return component
@@ -153,11 +195,11 @@ return function(settings, name)
     ---@generic T: NovaKIT.Component|string
     ---@param component T
     ---@return NovaKIT.Component|NovaKIT.Container
-    function Container:addImmutable(component)
+    function Container:addImmutable(component, customIndex)
         if (type(component) ~= 'table') then
             component = Text(tostring(component))
         end
-        self.children[#self.children + 1] = component ---@diagnostic disable-line
+        self.children[customIndex or #self.children + 1] = component ---@diagnostic disable-line
         component.parent = self ---@diagnostic disable-line
         return component
     end
@@ -212,6 +254,8 @@ return function(settings, name)
         end
         self:drawDebugInformation()
     end
+
+    Container:forEach(function(child) child.parent = Container end)
 
     return Container
 end

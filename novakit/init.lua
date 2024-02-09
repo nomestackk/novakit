@@ -33,4 +33,29 @@ NovaKIT.Panel = require(path .. '.Panel') ---@type fun(settings?: NovaKIT.PanelS
 NovaKIT.Stylebox = require(path .. '.Stylebox') ---@type fun(settings?: NovaKIT.StyleboxSettings): NovaKIT.Stylebox
 NovaKIT.TextStyle = require(path .. '.TextStyle') ---@type fun(settings?: NovaKIT.TextStyleSettings): NovaKIT.TextStyle
 
+-- Scene Manager
+
+local root = NovaKIT.Container()
+
+NovaKIT.getRoot = function()
+  return root
+end
+
+---@param component function|string
+NovaKIT.render = function(component)
+  if type(component) == "string" then
+    component = require(component)
+  end
+  local result = component()
+  root:addImmutable(result)
+end
+
+NovaKIT.load = function(directory)
+  directory = directory or 'app'
+  NovaKIT.render(directory)
+  love.draw = function()
+    root:draw()
+  end
+end
+
 return NovaKIT

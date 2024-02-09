@@ -33,12 +33,17 @@ local lastCursor = getSystemCursor 'arrow'
 ---@field width? number
 ---@field height? number
 ---@field rotation? integer
----@field events? table<NovaKIT.ComponentEventName, function[]> Represents a queue list of callbacks.
+---@field events? table<NovaKIT.ComponentEventName,function[]>|function Represents a queue list of callbacks.
 ---@field mouseListener? 1|2|3 Determines which mouse button will be heard when clicks are calculated.
 ---@field parent? NovaKIT.Container Components may have a Container as its parent. If it has this field represents the parent.
 ---@field display? boolean Determines whether this component is going to be rendered or not.
 ---@field enabled? boolean Determines whether this component is going to execute other events (except 'draw').
 ---@field antiAlign? boolean
+---@field onenter? fun(self, ...)
+---@field onleave? fun(self, ...)
+---@field onclick? fun(self, ...)
+---@field onrelease? fun(self, ...)
+---@field draw? fun(self, ...)
 
 ---@alias NovaKIT.ComponentEventName
 ---| 'onClick'
@@ -91,7 +96,13 @@ return function(settings, name)
     Component.width = settings.width or getWidth()
     Component.height = settings.height or getHeight()
     Component.rotation = settings.rotation or 0
-    Component.events = settings.events or {}
+    Component.events = settings.events or {
+        onClick = settings.onclick,
+        onRelease = settings.onrelease,
+        onEnter = settings.onenter,
+        onLeave = settings.onleave,
+        draw = settings.draw
+    }
     Component.hovered = false
     Component.clicked = false
     Component.mouseListener = settings.mouseListener or 1
@@ -106,9 +117,15 @@ return function(settings, name)
             parent:align()
         else
             Utility.Hint(
-                'Unnecessary call to the setDisplay() function of \'Component\'.\nConsider transforming this function to \'component.display = true|false\' for better performance.'
+                'Unnecessary call to the setDisplay() function of \'Component\'.\nConsider converting from function call to \'component.display = true|false\' for better performance.'
             )
         end
+    end
+
+    ---@param event NovaKIT.ComponentEventName
+    ---@param callback fun(self, ...)
+    function Component:on(event, callback)
+        self.events[event] = callback
     end
 
     function Component:isAlignable()
@@ -230,9 +247,13 @@ return function(settings, name)
     function Component:execute(eventName, ...)
         if self.events[eventName] then
             local queue = self.events[eventName]
-            for index = 1, #queue do
-                local event = queue[index]
-                event(self, ...)
+            if type(queue) == "function" then
+                queue(self, ...)
+            else
+                for index = 1, #queue do
+                    local event = queue[index] ---@diagnostic disable-line
+                    event(self, ...)
+                end
             end
         end
     end

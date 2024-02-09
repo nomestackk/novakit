@@ -30,5 +30,7 @@ return function(settings)
         end)
     end
 
+    if (settings and #settings.children > 0) then VDiv:align() end
+
     return VDiv
 end

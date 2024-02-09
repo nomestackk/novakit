@@ -1,28 +1,31 @@
-local novakit = require 'novakit'
-local state = require 'novakit/hooks/state'
-
-local vdiv = novakit.VDiv
-local text = novakit.Text
-local button = novakit.Button
+local novakit  = require 'novakit'
+local TaskList = require 'components/TaskList'
+local Scaffold = require 'novakit/Scaffold'
+local AppBar   = require 'novakit/AppBar'
 
 return function()
-  local counter = state(function(value) return text { textStyle = novakit.TextStyle { color = { 1, 1, 1, 1 } }, text = tostring(value) } end)
+  local taskList, setTaskList = TaskList()
 
-  counter(0)
-
-  return vdiv {
-    children = {
-      counter(),
-      button {
-        text = 'Add',
-        events = {
-          onClick = {
-            function()
-              counter(function(prev) return prev + 1 end)
-            end
-          }
-        }
-      }
-    }
+  return Scaffold {
+    appBar = AppBar(),
   }
+
+  -- return novakit.VDiv {
+  --   children = {
+  --     taskList(),
+  --     novakit.HDiv {
+  --       children = {
+  --         novakit.Button {
+  --           text = 'Add',
+  --           onclick = function()
+  --             setTaskList(function(prev)
+  --               prev[#prev + 1] = 'New Task'
+  --               return prev
+  --             end)
+  --           end
+  --         } -- Button
+  --       }
+  --     }     -- HDiv
+  --   }
+  -- }         -- VDiv
 end

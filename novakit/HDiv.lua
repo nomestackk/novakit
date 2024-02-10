@@ -20,6 +20,11 @@ return function(settings)
         end)
     end
 
+    function HDiv:resize()
+        self.width = self:accumulatorDimensionCalc 'width'
+        self.height = self:greatestDimensionCalc 'height'
+    end
+
     function HDiv:alignSize()
         local width = self.width / self:alignableChildrenCount()
         self:forEach(function(child)
@@ -29,6 +34,8 @@ return function(settings)
             end
         end)
     end
+
+    HDiv:align()
 
     return HDiv
 end

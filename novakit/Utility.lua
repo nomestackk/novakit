@@ -50,13 +50,18 @@ local function ExpectType(object, expected, argumentName, level)
     return true
 end
 
+local function IsArray(t)
+    return type(t) == "table" and #t > 0 and next(t, #t) == nil
+end
+
 ---@class NovaKIT.Utility
 local Utility = {
     Hint = Hint,
     ExpectType = ExpectType,
     Throw = Throw,
     Smooth = Smooth,
-    SmoothColor = SmoothColor
+    SmoothColor = SmoothColor,
+    IsArray = IsArray
 }
 
 return Utility

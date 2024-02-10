@@ -51,6 +51,7 @@ NovaKIT.render = function(component)
 end
 
 NovaKIT.load = function(directory)
+  love.graphics.setBackgroundColor(1, 1, 1)
   directory = directory or 'app'
   NovaKIT.render(directory)
   love.draw = function()

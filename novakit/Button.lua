@@ -41,6 +41,8 @@ return function(settings)
     Button.text = settings.text or 'Undefined'
     Button.stylebox = Stylebox({ animationSpeed = settings.animationSpeed })
     Button.textstyle = TextStyle({ animationSpeed = settings.animationSpeed })
+    Button.width = settings.width or Button.textstyle:getWidth(Button.text)
+    Button.height = settings.height or Button.textstyle:getHeight()
     Button.style = {}
     Button.style.default = {
         stylebox = settings.stylebox,

@@ -26,18 +26,34 @@ return function(settings)
     local TextStyle = {}
 
     TextStyle.font = settings.font or getFont()
-    TextStyle.color = settings.color or { 0.05, 0.05, 0.05, 1 }
+    TextStyle.color = settings.color or { 0, 0, 0, 1 }
     TextStyle.decoration = settings.decoration or 'none'
     TextStyle.halign = settings.halign or 'center'
     TextStyle.valign = settings.valign or 'middle'
     TextStyle.animationSpeed = settings.animationSpeed or 0.35
     TextStyle.interpolate = nil ---@type NovaKIT.TextStyle|nil
+    TextStyle.fontHeight = TextStyle.font:getHeight()
+
+    function TextStyle:getWidth(text)
+        return self.font:getWidth(text)
+    end
+
+    function TextStyle:getHeight()
+        return self.fontHeight
+    end
 
     function TextStyle:update()
         local interpolate = self.interpolate
         if not interpolate then return end
         Utility.SmoothColor(self.color, interpolate.color, self.animationSpeed)
         self.font = interpolate.font
+        self.decoration = interpolate.decoration
+    end
+
+    ---@param text string
+    ---@param component NovaKIT.Component
+    function TextStyle:render(text, component)
+        self:draw(text, component.x, component.y, component.width, component.height)
     end
 
     ---Draws this TextStyle.

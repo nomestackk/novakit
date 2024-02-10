@@ -47,10 +47,10 @@ return function(settings)
     ---@class NovaKIT.Stylebox
     local Stylebox = {}
 
-    Stylebox.color = settings.color or { 0.95, 0.95, 0.95, 1 }
+    Stylebox.color = settings.color or { 0.75, 0.75, 0.75, 1 }
     Stylebox.shrink = settings.shrink or 4
-    Stylebox.border = settings.border or 0
-    Stylebox.borderColor = settings.borderColor or { 0, 0, 0, 1 }
+    Stylebox.border = settings.border or 0.5
+    Stylebox.borderColor = settings.borderColor or { 0.5, 0.5, 0.5, 1 }
     Stylebox.radius = settings.radius or 4
     Stylebox.animationSpeed = settings.animationSpeed or 0.35
     Stylebox.interpolate = nil ---@type NovaKIT.Stylebox|nil

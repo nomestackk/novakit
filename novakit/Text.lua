@@ -23,6 +23,8 @@ return function(settings)
 
   Text.text = settings.text or 'Undefined'
   Text.textStyle = settings.textStyle or TextStyle()
+  Text.width = settings.width or Text.textStyle:getWidth(Text.text)
+  Text.height = settings.height or Text.textStyle:getHeight()
 
   Text:addEventListener('draw', function(self)
     self.textStyle:draw(self.text, self.x, self.y, self.width, self.height)

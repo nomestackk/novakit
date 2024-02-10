@@ -1,6 +1,7 @@
 local path           = (...):gsub('Container', '')
 local Component      = require(path .. '.Component') ---@type fun(...): NovaKIT.Component
 local Text           = require(path .. '.Text') ---@type fun(...): NovaKIT.Text
+local Utility        = require(path .. '.Utility') ---@type NovaKIT.Utility
 
 local setmetatable   = setmetatable
 
@@ -35,19 +36,28 @@ end
 ---You can add elements to the container using the '+' operator. Example: `myContainer = myContainer + Button({ text = 'Hello World' })`
 ---You can use `tostring` in containers.
 ---You can use the '#' operator to get the length of the children list of this container. Example: `print(#myContainer)`.
----@param settings? NovaKIT.ContainerSettings A table containing the settings of the Container. This argument can be nil.
+---@param settings? NovaKIT.ContainerSettings|NovaKIT.Container[] A table containing the settings of the Container. This argument can be nil.
 ---@param name? string
 return function(settings, name)
     settings = settings or EMPTY
+    local childrenList
+
+    if Utility.IsArray(settings) then
+        childrenList = {}
+        for i = 1, #settings do
+            childrenList[#childrenList + 1] = settings[i]
+        end
+    end
 
     ---@class NovaKIT.Container: NovaKIT.Component
     local Container = Component(settings, name or 'Container')
 
     setmetatable(Container, metatable)
 
+    Container.fixedSize = settings.fixedSize
     Container.alignmentMethod = settings.alignmentMethod or 'position+size'
     Container.gap = settings.gap or 0
-    Container.children = settings.children or {} ---@type NovaKIT.Component[]|NovaKIT.Container[]
+    Container.children = {} ---@type NovaKIT.Component[]|NovaKIT.Container[]
 
     ---@param object NovaKIT.Component
     function Container:index(object)
@@ -66,11 +76,28 @@ return function(settings, name)
     function Container:replace(target, to)
         local targetIndex = self:index(target)
         if not self.children[targetIndex] then
-            print('Component not found')
             return false
         end
         self:add(to, targetIndex)
         return true
+    end
+
+    function Container:accumulatorDimensionCalc(dimensionName)
+        local accum = 0
+        self:forEach(function(child)
+            accum = accum + child[dimensionName]
+        end)
+        return accum
+    end
+
+    function Container:greatestDimensionCalc(dimensionName)
+        local max = 0
+        self:forEach(function(child)
+            if child[dimensionName] > max then
+                max = child[dimensionName]
+            end
+        end)
+        return max
     end
 
     function Container:deepReplace(target, to)
@@ -79,11 +106,10 @@ return function(settings, name)
         local children = self.children
         for index = 1, #children do
             local child = children[index]
-            if child.deepReplace then
+            if child.replace then
                 ---@cast child NovaKIT.Container
                 local success = child:replace(target, to)
                 if success then
-                    print('Replaced successfully')
                     return true
                 end
             end
@@ -109,6 +135,7 @@ return function(settings, name)
 
     ---@param callback fun(child)
     function Container:forEach(callback)
+        if #self.children == 0 then return end
         local children = self.children
         for index = 1, #children do
             local child = children[index]
@@ -156,19 +183,26 @@ return function(settings, name)
         return result
     end
 
+    function Container:resize()
+    end
+
     ---Calls `Container:alignPosition()` and `Container:alignSize()` on this container
     ---based on the value of `Container.alignmentMethod`.
     ---If the alignment method is equal to 'position+size' then it will align the position
     ---and the size. If the alignment method is equal to 'position' it will align only the
     ---position. If the alignment method is equal to 'size' it will align only the size.
     function Container:align()
+        if #self.children == 0 then return end
         if self.alignmentMethod == 'position+size' then
-            self:alignSize()
+            if self.fixedSize then self:alignSize() end
             self:alignPosition()
         elseif self.alignmentMethod == 'position' then
             self:alignPosition()
         elseif self.alignmentMethod == 'size' then
-            self:alignSize()
+            if self.fixedSize then self:alignSize() end
+        end
+        if not self.fixedSize then
+            self:resize()
         end
         self:forEach(function(child)
             if child.align then
@@ -209,6 +243,7 @@ return function(settings, name)
     ---@param fun fun(value: T): NovaKIT.Component
     ---@param dontAlign? boolean
     function Container:map(tbl, fun, dontAlign)
+        if #tbl == 0 then return end
         for i = 1, #tbl do
             local value = tbl[i]
             self:addImmutable(fun(value))
@@ -249,13 +284,24 @@ return function(settings, name)
             self:capture()
         end
         if self.display then
-            self:execute('draw')
-            self:call('draw')
+            self:execute 'draw'
+            self:call 'draw'
         end
         self:drawDebugInformation()
     end
 
-    Container:forEach(function(child) child.parent = Container end)
+    if childrenList then
+        for index = 1, #childrenList do
+            Container:addImmutable(childrenList[index])
+        end
+    else
+        print('no childrenlist', Container)
+        if settings.children then
+            for index = 1, #settings.children do
+                Container:addImmutable(settings.children[index])
+            end
+        end
+    end
 
     return Container
 end

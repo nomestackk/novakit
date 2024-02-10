@@ -73,6 +73,7 @@ local DebugStylebox = Stylebox {
 ---@param name? string
 return function(settings, name)
     settings = settings or EMPTY
+
     if not Utility.ExpectType(settings, 'table', 'settings') then return end
 
     name = name or settings.name or 'BaseComponent'

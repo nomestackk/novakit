@@ -1,5 +1,6 @@
-local path = (...):gsub('VDiv', '')
-local Container = require(path .. '.Container')
+local path      = (...):gsub('VDiv', '')
+local Container = require(path .. '.Container') ---@type fun(...): NovaKIT.Container
+local Utility   = require('novakit/Utility')
 
 ---Creates a VDiv.
 ---VDiv extends from `Container` and aligns its children vertically.
@@ -7,7 +8,7 @@ local Container = require(path .. '.Container')
 ---@return NovaKIT.VDiv VDiv
 return function(settings)
     ---@class NovaKIT.VDiv: NovaKIT.Container
-    local VDiv = Container(settings, "VDiv")
+    local VDiv = Container(settings, 'VDiv')
 
     function VDiv:alignPosition()
         local y = self.y
@@ -20,6 +21,11 @@ return function(settings)
         end)
     end
 
+    function VDiv:resize()
+        self.width = self:greatestDimensionCalc 'width'
+        self.height = self:accumulatorDimensionCalc 'height'
+    end
+
     function VDiv:alignSize()
         local height = self.height / self:alignableChildrenCount()
         self:forEach(function(child)
@@ -30,7 +36,7 @@ return function(settings)
         end)
     end
 
-    if (settings and #settings.children > 0) then VDiv:align() end
+    VDiv:align()
 
     return VDiv
 end

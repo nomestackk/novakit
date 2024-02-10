@@ -1,6 +1,5 @@
 local path      = (...):gsub('VDiv', '')
 local Container = require(path .. '.Container') ---@type fun(...): NovaKIT.Container
-local Utility   = require('novakit/Utility')
 
 ---Creates a VDiv.
 ---VDiv extends from `Container` and aligns its children vertically.

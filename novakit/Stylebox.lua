@@ -94,5 +94,11 @@ return function(settings)
         self:update()
     end
 
+    ---@param component NovaKIT.Component
+    function Stylebox:render(component)
+        print('stylebox', component)
+        self:draw(component.x, component.y, component.width, component.height)
+    end
+
     return Stylebox
 end

@@ -6,19 +6,20 @@ local text     = novakit.Text
 local TaskList = require 'components/TaskList'
 
 return function()
-  local taskList, setTaskList = TaskList()
+  local renderTaskList, setTaskList = TaskList()
   return vdiv {
     width = 800,
     height = 600,
     children = {
       text 'Task List',
-      taskList(),
+      renderTaskList(),
+      button 'Test',
       hdiv {
         button {
           text = 'Add',
-          width = 80,
-          height = 40,
-          onclick = function(self, ...)
+          width = 100,
+          height = 50,
+          onclick = function()
             setTaskList(function(prev)
               prev[#prev + 1] = 'New Item'
               return prev
@@ -27,8 +28,8 @@ return function()
         },
         button {
           text = 'Clear Selected',
-          width = 80,
-          height = 40,
+          width = 100,
+          height = 50,
           onclick = function()
           end
         }

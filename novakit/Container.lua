@@ -82,6 +82,9 @@ return function(settings, name)
         return true
     end
 
+    ---@param dimensionName string
+    ---@return integer dimension
+    ---@protected
     function Container:accumulatorDimensionCalc(dimensionName)
         local accum = 0
         self:forEach(function(child)
@@ -90,6 +93,9 @@ return function(settings, name)
         return accum
     end
 
+    ---@param dimensionName string
+    ---@return integer dimension
+    ---@protected
     function Container:greatestDimensionCalc(dimensionName)
         local max = 0
         self:forEach(function(child)
@@ -202,6 +208,7 @@ return function(settings, name)
             if self.fixedSize then self:alignSize() end
         end
         if not self.fixedSize then
+            print("resize", self)
             self:resize()
         end
         self:forEach(function(child)
@@ -292,10 +299,10 @@ return function(settings, name)
 
     if childrenList then
         for index = 1, #childrenList do
+            print('added', childrenList[index])
             Container:addImmutable(childrenList[index])
         end
     else
-        print('no childrenlist', Container)
         if settings.children then
             for index = 1, #settings.children do
                 Container:addImmutable(settings.children[index])

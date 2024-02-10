@@ -1,3 +1,3 @@
 function love.load()
-  require 'novakit'.load()
+  require('novakit').load()
 end

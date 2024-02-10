@@ -64,7 +64,7 @@ return function(settings)
         local textstyle = style[state].textstyle
         self.stylebox.interpolate = stylebox
         self.textstyle.interpolate = textstyle
-        self.stylebox:draw(self.x, self.y, self.width, self.height)
+        self.stylebox:render(self)
         self.textstyle:draw(self.text, self.x, self.y, self.width, self.height)
     end)
 

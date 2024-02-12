@@ -1,6 +1,5 @@
-local path = (...):gsub('Text', '')
-local Component = require(path .. '.Component')
-local TextStyle = require(path .. '.TextStyle')
+local Component = require(NovaPath .. '.Component') ---@type NovaKIT.Component
+local TextStyle = require(NovaPath .. '.TextStyle') ---@type NovaKIT.TextStyle
 
 ---@class NovaKIT.TextSettings: NovaKIT.ComponentSettings
 ---@field text? string
@@ -8,27 +7,19 @@ local TextStyle = require(path .. '.TextStyle')
 
 local EMPTY = {}
 
----Creates a new Text.
----Text is a component that can only draw a `TextStyle`.
----Supports events just like any class that inherits from `Component`.
+---@class NovaKIT.Text: NovaKIT.Component
+local Text = Component:subclass 'Text'
+
 ---@param settings? NovaKIT.TextSettings|string
----@return NovaKIT.Text text
-return function(settings)
+function Text:initialize(settings)
   settings = settings or EMPTY
-
-  if type(settings) == 'string' then settings = { text = settings } end
-
-  ---@class NovaKIT.Text: NovaKIT.Component
-  local Text = Component(settings, 'Text')
-
-  Text.text = settings.text or 'Undefined'
-  Text.textStyle = settings.textStyle or TextStyle()
-  Text.width = settings.width or Text.textStyle:getWidth(Text.text)
-  Text.height = settings.height or Text.textStyle:getHeight()
-
-  Text:addEventListener('draw', function(self)
-    self.textStyle:draw(self.text, self.x, self.y, self.width, self.height)
+  self.text = settings.text or 'nil'
+  self.textStyle = settings.textStyle or TextStyle()
+  self.width = settings.width or self.textStyle:getWidth(self.text)
+  self.height = settings.height or self.textStyle:getHeight()
+  self:addEventListener('draw', function()
+    self.textStyle:render(self.text, self)
   end)
-
-  return Text
 end
+
+return Text

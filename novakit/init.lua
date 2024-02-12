@@ -23,12 +23,12 @@ end
 -- Components
 
 NovaKIT.Font = require(path .. '.Font') ---@type NovaKIT.Font
-NovaKIT.Button = require(path .. '.Button') ---@type fun(settings?: NovaKIT.ButtonSettings|string): NovaKIT.Button
-NovaKIT.Text = require(path .. '.Text') ---@type fun(settings?: NovaKIT.TextSettings|string): NovaKIT.Text
+NovaKIT.Button = require(path .. '.Button') ---@type NovaKIT.Button
+NovaKIT.Text = require(path .. '.Text') ---@type NovaKIT.Text
 NovaKIT.Container = require(path .. '.Container') ---@type NovaKIT.Container
 NovaKIT.Component = require(path .. '.Component') ---@type NovaKIT.Component
-NovaKIT.HDiv = require(path .. '.HDiv') ---@type fun(settings?: NovaKIT.ContainerSettings): NovaKIT.HDiv
-NovaKIT.VDiv = require(path .. '.VDiv') ---@type fun(settings?: NovaKIT.ContainerSettings): NovaKIT.VDiv
+NovaKIT.HDiv = require(path .. '.HDiv') ---@type NovaKIT.HDiv
+NovaKIT.VDiv = require(path .. '.VDiv') ---@type NovaKIT.VDiv
 NovaKIT.Panel = require(path .. '.Panel') ---@type fun(settings?: NovaKIT.PanelSettings): NovaKIT.Panel
 NovaKIT.Stylebox = require(path .. '.Stylebox') ---@type fun(settings?: NovaKIT.StyleboxSettings): NovaKIT.Stylebox
 NovaKIT.TextStyle = require(path .. '.TextStyle') ---@type fun(settings?: NovaKIT.TextStyleSettings): NovaKIT.TextStyle

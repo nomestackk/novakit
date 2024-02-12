@@ -1,14 +1,13 @@
-local middleclass = require(NovaPath .. '.libs.middleclass')
-local Component   = require(NovaPath .. '.Component') ---@type NovaKIT.Component
-local Text        = require(NovaPath .. '.Text') ---@type fun(...): NovaKIT.Text
-local Utility     = require(NovaPath .. '.Utility') ---@type NovaKIT.Utility
+local Component = require(NovaPath .. '.Component') ---@type NovaKIT.Component
+local Text      = require(NovaPath .. '.Text') ---@type fun(...): NovaKIT.Text
+local Utility   = require(NovaPath .. '.Utility') ---@type NovaKIT.Utility
 
-local EMPTY       = {}
+local EMPTY     = {}
 
 ---@class NovaKIT.Container: NovaKIT.Component
 ---@operator call: NovaKIT.Container
 ---@field super NovaKIT.Component
-local Container   = Component:subclass 'Container'
+local Container = Component:subclass 'Container'
 
 ---@param settings? NovaKIT.ContainerSettings|NovaKIT.Container[]
 function Container:initialize(settings)

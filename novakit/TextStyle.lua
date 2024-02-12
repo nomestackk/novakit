@@ -29,7 +29,7 @@ function TextStyle:initialize(settings)
   self.halign = settings.halign or 'center'
   self.valign = settings.valign or 'middle'
   self.animationSpeed = settings.animationSpeed or 0.35
-  self.fontHeight = TextStyle.font:getHeight()
+  self.fontHeight = self.font:getHeight()
   self.interpolate = nil
 end
 

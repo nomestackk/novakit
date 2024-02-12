@@ -89,6 +89,7 @@ function Component:isAlignable()
 end
 
 function Component:drawDebugInformation()
+  if not self.debug then return end
   if not self.hovered then return end
   local information = tostring(self)
   DebugStylebox:render(self)

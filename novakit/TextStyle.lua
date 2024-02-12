@@ -1,3 +1,4 @@
+local middleclass = require(NovaPath .. '.libs.middleclass')
 local Utility = require(NovaPath .. '.Utility') ---@type NovaKIT.Utility
 
 local getFont = love.graphics.getFont
@@ -15,73 +16,70 @@ local EMPTY = {}
 ---@field valign? 'top'|'middle'|'bottom' Controls the text's vertical alignment. Supports top, middle and bottom.
 ---@field animationSpeed? number
 
----Creates a TextStyle.
----TextStyle provides common settings to customize texts.
----@param settings NovaKIT.TextStyleSettings
----@return NovaKIT.TextStyle textStyle
-return function(settings)
-    settings = settings or EMPTY
+---@class NovaKIT.TextStyle: middleclass.Class
+---@operator call: NovaKIT.TextStyle
+local TextStyle = middleclass 'TextStyle'
 
-    ---@class NovaKIT.TextStyle
-    local TextStyle = {}
-
-    TextStyle.font = settings.font or getFont()
-    TextStyle.color = settings.color or { 0, 0, 0, 1 }
-    TextStyle.decoration = settings.decoration or 'none'
-    TextStyle.halign = settings.halign or 'center'
-    TextStyle.valign = settings.valign or 'middle'
-    TextStyle.animationSpeed = settings.animationSpeed or 0.35
-    TextStyle.interpolate = nil ---@type NovaKIT.TextStyle|nil
-    TextStyle.fontHeight = TextStyle.font:getHeight()
-
-    function TextStyle:getWidth(text)
-        return self.font:getWidth(text)
-    end
-
-    function TextStyle:getHeight()
-        return self.fontHeight
-    end
-
-    function TextStyle:update()
-        local interpolate = self.interpolate
-        if not interpolate then return end
-        Utility.SmoothColor(self.color, interpolate.color, self.animationSpeed)
-        self.font = interpolate.font
-        self.decoration = interpolate.decoration
-    end
-
-    ---@param text string
-    ---@param component NovaKIT.Component
-    function TextStyle:render(text, component)
-        self:draw(text, component.x, component.y, component.width, component.height)
-    end
-
-    ---Draws this TextStyle.
-    ---@param text string
-    ---@param x number
-    ---@param y number
-    ---@param width number
-    ---@param height number
-    function TextStyle:draw(text, x, y, width, height)
-        local textY
-        if self.valign == 'top' then
-            textY = y
-        elseif self.valign == 'middle' then
-            textY = y + (height - self.font:getHeight()) / 2
-        elseif self.valign == 'bottom' then
-            textY = y + (height - self.font:getHeight())
-        end
-        setColor(self.color)
-        setFont(self.font)
-        printf(
-            text,
-            x,
-            textY,
-            width,
-            self.halign
-        )
-        self:update()
-    end
-
-    return TextStyle
+---@param settings? NovaKIT.TextStyleSettings
+function TextStyle:initialize(settings)
+  settings = settings or EMPTY
+  self.font = settings.font or getFont()
+  self.color = settings.color or { 0, 0, 0, 1 }
+  self.decoration = settings.decoration or 'none'
+  self.halign = settings.halign or 'center'
+  self.valign = settings.valign or 'middle'
+  self.animationSpeed = settings.animationSpeed or 0.35
+  self.fontHeight = TextStyle.font:getHeight()
+  self.interpolate = nil
 end
+
+---@param font love.Font
+function TextStyle:setFont(font)
+  self.font = font
+  self.fontHeight = font:getHeight()
+end
+
+---@param text string
+function TextStyle:getWidth(text)
+  return self.font:getWidth(text)
+end
+
+function TextStyle:getHeight()
+  return self.fontHeight
+end
+
+function TextStyle:update()
+  local interpolate = self.interpolate
+  if not interpolate then return end
+  Utility.SmoothColor(self.color, interpolate.color, self.animationSpeed)
+  self.font = interpolate.font
+  self.decoration = interpolate.decoration
+end
+
+---@param text string
+---@param component NovaKIT.Component
+function TextStyle:render(text, component)
+  self:draw(text, component.x, component.y, component.width, component.height)
+end
+
+---@param text string
+---@param x number
+---@param y number
+---@param width number
+---@param height number
+function TextStyle:draw(text, x, y, width, height)
+  local textY
+  if self.valign == 'top' then
+    textY = y
+  elseif self.valign == 'middle' then
+    textY = y + (height - self.font:getHeight()) / 2
+  elseif self.valign == 'bottom' then
+    textY = y + (height - self.font:getHeight())
+  end
+  setColor(self.color)
+  setFont(self.font)
+  printf(text, x, textY, width, self.halign)
+  self:update()
+end
+
+return TextStyle

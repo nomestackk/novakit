@@ -56,7 +56,7 @@ function Component:initialize(settings)
   self.height = settings.height or getHeight()
   self.cursor = settings.cursor and getSystemCursor(settings.cursor)
   self.antiAlign = settings.antiAlign
-  self.debug = false
+  self.debug = settings.debug
   self.hovered = false
   self.clicked = false
   self.parent = settings.parent
@@ -99,7 +99,7 @@ end
 function Component:capture()
   if not self.enabled then return end
   if IS_IN_MOBILE_DEVICE then
-    -- TODO
+    -- TODO: Add support to mobile devices
   else
     local mouseX, mouseY = getPosition()
     local hovered = getPointInsideOf(self.x, self.y, self.width, self.height, mouseX, mouseY)

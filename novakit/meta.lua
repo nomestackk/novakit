@@ -10,7 +10,7 @@
 ---@field width? number
 ---@field height? number
 ---@field rotation? integer
----@field events? table<NovaKIT.ComponentEventName,function[]>|function Represents a queue list of callbacks.
+---@field events? table<NovaKIT.ComponentEventName,function[]> Represents a queue list of callbacks.
 ---@field mouseListener? 1|2|3 Determines which mouse button will be heard when clicks are calculated.
 ---@field parent? NovaKIT.Container Components may have a Container as its parent. If it has this field represents the parent.
 ---@field display? boolean Determines whether this component is going to be rendered or not.

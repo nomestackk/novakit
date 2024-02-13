@@ -30,6 +30,7 @@ NovaKIT.Component = require(path .. '.Component') ---@type NovaKIT.Component
 NovaKIT.HDiv = require(path .. '.HDiv') ---@type NovaKIT.HDiv
 NovaKIT.VDiv = require(path .. '.VDiv') ---@type NovaKIT.VDiv
 NovaKIT.Panel = require(path .. '.Panel') ---@type fun(settings?: NovaKIT.PanelSettings): NovaKIT.Panel
+NovaKIT.Checkbox = require(path .. '.Checkbox') ---@type NovaKIT.Checkbox
 NovaKIT.Stylebox = require(path .. '.Stylebox') ---@type NovaKIT.Stylebox
 NovaKIT.TextStyle = require(path .. '.TextStyle') ---@type NovaKIT.TextStyle
 NovaKIT.MultiRender = require(path .. '.MultiRender') ---@type NovaKIT.MultiRender

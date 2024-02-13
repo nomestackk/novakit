@@ -1,8 +1,12 @@
 local Component = require(NovaPath .. '.Component') ---@type NovaKIT.Component
-local Text      = require(NovaPath .. '.Text') ---@type fun(...): NovaKIT.Text
-local Utility   = require(NovaPath .. '.Utility') ---@type NovaKIT.Utility
+local Text = require(NovaPath .. '.Text') ---@type NovaKIT.Text
+local tablex = require(NovaPath .. '.libs.table') ---@type NovaKIT.TableModule
 
-local EMPTY     = {}
+local assert = assert
+local error = error
+local type = type
+
+local EMPTY = {}
 
 ---@class NovaKIT.Container: NovaKIT.Component
 ---@operator call: NovaKIT.Container
@@ -20,9 +24,16 @@ function Container:initialize(settings)
   self.gap = settings.gap or 0
   self.children = {}
 
-  if Utility.IsArray(settings) then
-    for index = 1, #settings do
-      self:add(settings[index])
+  if tablex.type(settings) == 'array' then
+    tablex.foreach(settings, function(value)
+      self:add(value)
+    end)
+  else
+    local children = settings.children
+    if children then
+      tablex.foreach(children, function(value)
+        self:add(value)
+      end)
     end
   end
 end
@@ -43,40 +54,37 @@ end
 ---@return boolean
 function Container:replace(target, to)
   local targetIndex = self:index(target)
-  if not self.children[targetIndex] then
-    return false
-  end
+  if not self.children[targetIndex] then return false end
   self:add(to, targetIndex)
   return true
 end
 
----@param dimensionName string
+---@param dimension string
 ---@return integer dimension
 ---@protected
-function Container:accumulatorDimensionCalc(dimensionName)
-  local accum = 0
+function Container:accumulatorDimensionCalc(dimension)
+  local accumulator = 0
   self:forEach(function(child)
-    accum = accum + child[dimensionName]
+    accumulator = accumulator + child[dimension]
   end)
-  return accum
+  return accumulator
 end
 
----@param dimensionName string
+---@param dimension string
 ---@return integer dimension
 ---@protected
-function Container:greatestDimensionCalc(dimensionName)
-  local max = 0
+function Container:greatestDimensionCalc(dimension)
+  local value = 0
   self:forEach(function(child)
-    if child[dimensionName] > max then
-      max = child[dimensionName]
+    if child[dimension] > value then
+      value = child[dimension]
     end
   end)
-  return max
+  return value
 end
 
 function Container:deepReplace(target, to)
-  local replacedInSelf = self:replace(target, to)
-  if replacedInSelf then return end
+  if self:replace(target, to) then return end
   local children = self.children
   for index = 1, #children do
     local child = children[index]
@@ -105,8 +113,8 @@ end
 
 ---@param callback fun(child)
 function Container:forEach(callback)
-  if #self.children == 0 then return end
   local children = self.children
+  if #children == 0 then return end
   for index = 1, #children do
     local child = children[index]
     callback(child)
@@ -176,14 +184,29 @@ function Container:align()
   end)
 end
 
+---@param value any
+---@return NovaKIT.Component component
+function Container:convert(value)
+  assert(value, 'cannot convert type \'nil\' to a component')
+  if type(value) ~= 'table' then
+    if type(value) == 'function' then
+      error('cannot convert type \'function\' to a component')
+    elseif type(value) == 'thread' then
+      error('cannot convert type \'thread\' to component')
+    else
+      return Text(tostring(value))
+    end
+  end
+  value.parent = self
+  return value
+end
+
 ---Adds `component` to the list of children of this Component and calls `Container:align()` after.
 ---@generic T: NovaKIT.Component|string
 ---@param component T
 ---@return NovaKIT.Component|NovaKIT.Container
 function Container:add(component, customIndex)
-  if (type(component) ~= 'table') then
-    component = Text(tostring(component))
-  end
+  component = self:convert(component)
   self.children[customIndex or #self.children + 1] = component ---@diagnostic disable-line
   component.parent = self ---@diagnostic disable-line
   self:align()
@@ -195,9 +218,7 @@ end
 ---@param component T
 ---@return NovaKIT.Component|NovaKIT.Container
 function Container:addImmutable(component, customIndex)
-  if (type(component) ~= 'table') then
-    component = Text(tostring(component))
-  end
+  component = self:convert(component)
   self.children[customIndex or #self.children + 1] = component ---@diagnostic disable-line
   component.parent = self ---@diagnostic disable-line
   return component
@@ -205,13 +226,13 @@ end
 
 ---@generic T
 ---@param table T[]
----@param callback fun(value: T): NovaKIT.Component
+---@param callback fun(value: T, index: integer): NovaKIT.Component
 ---@param dontAlign? boolean
 function Container:map(table, callback, dontAlign)
   if #table == 0 then return end
   for index = 1, #table do
     local value = table[index]
-    self:addImmutable(callback(value))
+    self:addImmutable(callback(value, index))
   end
   if not dontAlign then
     self:align()
@@ -240,9 +261,7 @@ function Container:call(functionName, ...)
 end
 
 function Container:draw()
-  if self.enabled then
-    self:capture()
-  end
+  self:capture()
   if self.display then
     self:execute 'draw'
     self:call 'draw'

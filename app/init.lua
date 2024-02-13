@@ -1,39 +1,50 @@
-local novakit  = require 'novakit'
-local vdiv     = novakit.VDiv
-local hdiv     = novakit.HDiv
-local button   = novakit.Button
-local text     = novakit.Text
-local TaskList = require 'components/TaskList'
+local novakit = require 'novakit'
+local vdiv = novakit.VDiv
+local hdiv = novakit.HDiv
+local button = novakit.Button
+local text = novakit.Text
+local tablex = require('novakit.libs.table')
+
+local CreateTaskList = require 'components/TaskList'
+
+---@class Task
+---@field description string
+---@field completed boolean
 
 return function()
-  local renderTaskList, setTaskList = TaskList()
+  local TaskList, setTaskList = CreateTaskList { { description = "New Task", completed = false } }
   return vdiv {
-    width = 800,
-    height = 600,
     children = {
-      text 'Task List',
-      renderTaskList(),
-      button 'Test',
+      text 'Your tasks',
+      TaskList(),
       hdiv {
-        button {
-          text = 'Add',
-          width = 100,
-          height = 50,
-          onclick = function()
-            setTaskList(function(prev)
-              prev[#prev + 1] = 'New Item'
-              return prev
-            end)
-          end
-        },
-        button {
-          text = 'Clear Selected',
-          width = 100,
-          height = 50,
-          onclick = function()
-          end
+        children = {
+          button {
+            text = 'Add',
+            width = 100,
+            height = 50,
+            onclick = function()
+              setTaskList(function(previous)
+                previous[#previous + 1] = {
+                  description = "New Task",
+                  completed = false
+                }
+                return previous
+              end)
+            end
+          }, -- Button
+          button {
+            text = "Clear Completed",
+            width = 100,
+            height = 50,
+            onclick = function()
+              setTaskList(function(previous)
+                return tablex.filter(previous, function(task) return not task.completed end)
+              end)
+            end
+          }
         }
-      }
+      } -- HDiv
     }
-  }
+  }     -- VDiv
 end

@@ -1,14 +1,26 @@
-local novakit = require "novakit"
-local state = require "novakit/hooks/state"
+local novakit = require 'novakit'
+local Task = require 'components.Task'
+local vdiv = novakit.VDiv
+local state = require 'novakit/hooks/state'
 
 return function(initialValue)
-  local taskList, setTaskList = state(function(value)
-    local vdiv = novakit.VDiv()
-    for i = 1, #value do
-      vdiv:addImmutable(value[i])
-    end
-    return vdiv
+  local render, setTasks
+  render, setTasks = state(function(tasks)
+    local list = vdiv()
+    list:map(tasks, function(value, index)
+      return Task {
+        debug = true,
+        task = value,
+        onChange = function()
+          setTasks(function(previous)
+            previous[index].completed = not previous[index].completed
+            return previous
+          end)
+        end
+      }
+    end)
+    return list
   end)
-  setTaskList(initialValue or {})
-  return taskList, setTaskList
+  setTasks(initialValue or {})
+  return render, setTasks
 end

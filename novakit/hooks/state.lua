@@ -1,33 +1,34 @@
----@alias NovaKIT.State fun(value): NovaKIT.Component?
+local assert = assert
+local type = type
 
----Returns a state.
----@param renderer fun(value: any): NovaKIT.Component
-return function(renderer)
-  local currentValue
-  local current
+---@param factory fun(value: any): NovaKIT.Component
+return function(factory)
+  local state, component
 
-  local replacer = function(value)
-    local new = renderer(value)
-    current.parent:replace(current, new)
+  local replace = function(value)
+    local new = factory(value)
+    if new.align then new:align() end ---@diagnostic disable-line
+    component.parent:replace(component, new)
     return new
   end
 
-  local function rendererReturn()
-    current = renderer(currentValue)
-    return current
+  local function render()
+    component = factory(state)
+    assert(component, "component function factory must return a component")
+    return component
   end
 
-  local function setterReturn(setter)
-    if type(setter) == "function" then
-      currentValue = setter(currentValue)
+  local function set(value)
+    if type(value) == 'function' then
+      state = value(state)
     else
-      currentValue = setter
+      state = value
     end
-    if current then
-      current = replacer(currentValue)
-      return current
+    if component then
+      component = replace(state)
+      return component
     end
   end
 
-  return rendererReturn, setterReturn
+  return render, set
 end

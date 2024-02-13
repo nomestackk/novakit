@@ -30,8 +30,9 @@ NovaKIT.Component = require(path .. '.Component') ---@type NovaKIT.Component
 NovaKIT.HDiv = require(path .. '.HDiv') ---@type NovaKIT.HDiv
 NovaKIT.VDiv = require(path .. '.VDiv') ---@type NovaKIT.VDiv
 NovaKIT.Panel = require(path .. '.Panel') ---@type fun(settings?: NovaKIT.PanelSettings): NovaKIT.Panel
-NovaKIT.Stylebox = require(path .. '.Stylebox') ---@type fun(settings?: NovaKIT.StyleboxSettings): NovaKIT.Stylebox
-NovaKIT.TextStyle = require(path .. '.TextStyle') ---@type fun(settings?: NovaKIT.TextStyleSettings): NovaKIT.TextStyle
+NovaKIT.Stylebox = require(path .. '.Stylebox') ---@type NovaKIT.Stylebox
+NovaKIT.TextStyle = require(path .. '.TextStyle') ---@type NovaKIT.TextStyle
+NovaKIT.MultiRender = require(path .. '.MultiRender') ---@type NovaKIT.MultiRender
 
 -- Scene Manager
 
